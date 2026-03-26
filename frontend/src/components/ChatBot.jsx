@@ -32,8 +32,8 @@ function MessageBubble({ msg }) {
 
             {/* Bubble */}
             <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${isUser
-                    ? 'bg-blue-600 text-white rounded-tr-sm'
-                    : 'bg-white/8 border border-white/10 text-white/90 rounded-tl-sm'
+                ? 'bg-blue-600 text-white rounded-tr-sm'
+                : 'bg-white/8 border border-white/10 text-white/90 rounded-tl-sm'
                 }`}>
                 {/* Strip the JSON action block from the display */}
                 {msg.content.replace(/```json[\s\S]*?```/g, '').trim()}
@@ -135,8 +135,9 @@ export default function ChatBot() {
         <>
             {/* Floating button */}
             <button
-                onClick={() => setOpen(o => !o)}
-                className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-110 glow-blue"
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(o => !o) }}
+                className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-110"
                 title="Open AI Assistant"
             >
                 {open ? <X size={22} /> : <MessageCircle size={22} />}
@@ -159,7 +160,7 @@ export default function ChatBot() {
                             <p className="text-white text-sm font-semibold">Life Admin Assistant</p>
                             <p className="text-white/40 text-xs">Powered by Groq · LLaMA 3.3 70B</p>
                         </div>
-                        <button onClick={() => setOpen(false)} className="ml-auto text-white/30 hover:text-white">
+                        <button type="button" onClick={(e) => { e.preventDefault(); setOpen(false) }} className="ml-auto text-white/30 hover:text-white">
                             <ChevronDown size={16} />
                         </button>
                     </div>
@@ -191,8 +192,9 @@ export default function ChatBot() {
                         <div className="px-4 pb-2 flex flex-wrap gap-1.5 shrink-0">
                             {QUICK_ACTIONS.map(action => (
                                 <button
+                                    type="button"
                                     key={action.text}
-                                    onClick={() => sendMessage(action.text)}
+                                    onClick={(e) => { e.preventDefault(); sendMessage(action.text) }}
                                     className="text-xs px-2.5 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/70 hover:text-white transition-colors"
                                 >
                                     {action.label}
@@ -214,7 +216,8 @@ export default function ChatBot() {
                             style={{ minHeight: '38px' }}
                         />
                         <button
-                            onClick={() => sendMessage(input)}
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); sendMessage(input) }}
                             disabled={!input.trim() || loading}
                             className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 flex items-center justify-center shrink-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                         >
