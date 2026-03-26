@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, Component } from 'react'
 import { MessageCircle, X, Send, Loader2, Bot, User, PackagePlus, ChevronDown } from 'lucide-react'
 
-const API = 'http://localhost:8000'
+// Relative URL — Vite proxy forwards /api to localhost:8000
+const API = ''
 
 const QUICK_ACTIONS = [
     { label: '📋 What can you do?', text: 'What can this app do? Give me a quick tour.' },
@@ -10,35 +11,49 @@ const QUICK_ACTIONS = [
     { label: '📊 Explain priorities', text: 'How does the agent decide P1/P2/P3 priorities?' },
 ]
 
+// ── Error boundary so a crash inside chat NEVER blanks the whole page ──────────
+class ChatErrorBoundary extends Component {
+    constructor(props) { super(props); this.state = { hasError: false } }
+    static getDerivedStateFromError() { return { hasError: true } }
+    render() {
+        if (this.state.hasError)
+            return (
+                <div className="fixed bottom-24 right-6 z-50 p-4 bg-red-900/80 border border-red-500/30 rounded-xl text-xs text-red-300 max-w-xs">
+                    ⚠️ Chatbot crashed — please refresh the page.
+                </div>
+            )
+        return this.props.children
+    }
+}
+
+// ── Individual message bubble ─────────────────────────────────────────────────
 function MessageBubble({ msg }) {
     const isUser = msg.role === 'user'
     const isSystem = msg.role === 'system'
+    // Guard: content may be undefined/null if something went wrong
+    const raw = (msg.content ?? '').replace(/```json[\s\S]*?```/g, '').trim()
 
     if (isSystem) {
         return (
             <div className="flex justify-center mb-3">
-                <span className="text-xs text-white/30 bg-white/5 px-3 py-1 rounded-full">{msg.content}</span>
+                <span className="text-xs text-white/30 bg-white/5 px-3 py-1 rounded-full">{raw}</span>
             </div>
         )
     }
 
     return (
-        <div className={`flex gap-2 mb-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} animate-fade-in`}>
-            {/* Avatar */}
+        <div className={`flex gap-2 mb-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
             <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${isUser ? 'bg-blue-600' : 'bg-gradient-to-br from-purple-600 to-blue-600'
                 }`}>
                 {isUser ? <User size={13} /> : <Bot size={13} />}
             </div>
 
-            {/* Bubble */}
             <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${isUser
-                ? 'bg-blue-600 text-white rounded-tr-sm'
-                : 'bg-white/8 border border-white/10 text-white/90 rounded-tl-sm'
+                    ? 'bg-blue-600 text-white rounded-tr-sm'
+                    : 'bg-white/8 border border-white/10 text-white/90 rounded-tl-sm'
                 }`}>
-                {/* Strip the JSON action block from the display */}
-                {msg.content.replace(/```json[\s\S]*?```/g, '').trim()}
+                {raw || <span className="opacity-40 italic">...</span>}
 
-                {/* Show subscription added confirmation */}
                 {msg.action?.type === 'subscription_added' && (
                     <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2">
                         <PackagePlus size={12} className="text-emerald-400" />
@@ -52,12 +67,13 @@ function MessageBubble({ msg }) {
     )
 }
 
-export default function ChatBot() {
+// ── Main chatbot component ────────────────────────────────────────────────────
+function ChatBotInner() {
     const [open, setOpen] = useState(false)
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: "👋 Hi! I'm your **Life Admin Assistant** powered by Groq (LLaMA 3.3 70B).\n\nI can help you:\n• Navigate the app\n• Add subscriptions manually\n• Explain how the AI agent works\n• Answer questions about your tasks & finances\n\nWhat would you like to do?",
+            content: "👋 Hi! I'm your Life Admin Assistant powered by Groq (LLaMA 3.3 70B).\n\nI can help you:\n• Navigate the app\n• Add subscriptions manually\n• Explain how the AI agent works\n• Answer questions about your tasks & finances\n\nWhat would you like to do?",
         },
     ])
     const [input, setInput] = useState('')
@@ -87,7 +103,6 @@ export default function ChatBot() {
         setInput('')
         setLoading(true)
 
-        // Build history for Groq (exclude system messages and action metadata)
         const history = [...messages, userMsg]
             .filter(m => m.role !== 'system')
             .map(m => ({ role: m.role, content: m.content }))
@@ -98,27 +113,24 @@ export default function ChatBot() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: history }),
             })
+            if (!res.ok) throw new Error(`Server error ${res.status} — is the backend running?`)
             const data = await res.json()
-            setMessages(prev => [
-                ...prev,
-                { role: 'assistant', content: data.reply, action: data.action },
-            ])
+            const reply = (typeof data.reply === 'string' && data.reply)
+                ? data.reply
+                : '⚠️ Empty response from server.'
+            setMessages(prev => [...prev, { role: 'assistant', content: reply, action: data.action ?? null }])
 
-            // If a subscription was added, show a system notification in chat
             if (data.action?.type === 'subscription_added') {
                 setMessages(prev => [
                     ...prev,
-                    {
-                        role: 'system',
-                        content: `Subscription "${data.action.service_name}" added ✓ — check the Subscriptions page`,
-                    },
+                    { role: 'system', content: `"${data.action.service_name}" added ✓ — check Subscriptions page` },
                 ])
             }
-        } catch (e) {
-            setMessages(prev => [
-                ...prev,
-                { role: 'assistant', content: '❌ Connection error. Is the backend running on port 8000?' },
-            ])
+        } catch (err) {
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: `❌ ${err.message || 'Connection failed'}.\n\nMake sure the backend is running:\ncd backend && uvicorn main:app --reload --port 8000`,
+            }])
         } finally {
             setLoading(false)
         }
@@ -127,13 +139,14 @@ export default function ChatBot() {
     const handleKey = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
+            e.stopPropagation()
             sendMessage(input)
         }
     }
 
     return (
         <>
-            {/* Floating button */}
+            {/* ── Floating bubble ── */}
             <button
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(o => !o) }}
@@ -148,9 +161,12 @@ export default function ChatBot() {
                 )}
             </button>
 
-            {/* Chat window */}
+            {/* ── Chat window ── */}
             {open && (
-                <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 h-[520px] flex flex-col glass-card border border-purple-500/30 shadow-2xl animate-slide-up overflow-hidden">
+                <div
+                    className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 h-[520px] flex flex-col glass-card border border-purple-500/30 shadow-2xl overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     {/* Header */}
                     <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 bg-gradient-to-r from-purple-600/20 to-blue-600/20 shrink-0">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
@@ -160,7 +176,11 @@ export default function ChatBot() {
                             <p className="text-white text-sm font-semibold">Life Admin Assistant</p>
                             <p className="text-white/40 text-xs">Powered by Groq · LLaMA 3.3 70B</p>
                         </div>
-                        <button type="button" onClick={(e) => { e.preventDefault(); setOpen(false) }} className="ml-auto text-white/30 hover:text-white">
+                        <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(false) }}
+                            className="ml-auto text-white/30 hover:text-white transition-colors"
+                        >
                             <ChevronDown size={16} />
                         </button>
                     </div>
@@ -171,7 +191,7 @@ export default function ChatBot() {
                             <MessageBubble key={i} msg={msg} />
                         ))}
                         {loading && (
-                            <div className="flex gap-2 mb-3 animate-fade-in">
+                            <div className="flex gap-2 mb-3">
                                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
                                     <Bot size={13} />
                                 </div>
@@ -187,7 +207,7 @@ export default function ChatBot() {
                         <div ref={bottomRef} />
                     </div>
 
-                    {/* Quick actions */}
+                    {/* Quick actions (only on first open) */}
                     {messages.length <= 1 && (
                         <div className="px-4 pb-2 flex flex-wrap gap-1.5 shrink-0">
                             {QUICK_ACTIONS.map(action => (
@@ -203,14 +223,14 @@ export default function ChatBot() {
                         </div>
                     )}
 
-                    {/* Input */}
+                    {/* Input row */}
                     <div className="px-3 py-3 border-t border-white/5 flex gap-2 items-end shrink-0">
                         <textarea
                             ref={inputRef}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKey}
-                            placeholder="Ask me anything… or say 'add Netflix ₹649/month'"
+                            placeholder="Say 'hi' or 'add Spotify ₹119/month'…"
                             rows={1}
                             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-white/30 resize-none focus:outline-none focus:border-purple-500/50 transition-colors max-h-24"
                             style={{ minHeight: '38px' }}
@@ -227,5 +247,13 @@ export default function ChatBot() {
                 </div>
             )}
         </>
+    )
+}
+
+export default function ChatBot() {
+    return (
+        <ChatErrorBoundary>
+            <ChatBotInner />
+        </ChatErrorBoundary>
     )
 }
