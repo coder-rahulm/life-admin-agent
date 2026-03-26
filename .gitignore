@@ -1,0 +1,38 @@
+# Python
+backend/venv/
+backend/__pycache__/
+backend/agent/__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment / secrets
+backend/.env
+.env
+
+# Database & vector store
+*.db
+*.sqlite
+backend/chroma_db/
+chroma_db/
+/chroma_db/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Eval output
+eval_results.json
+
+# Gmail token
+gmail_token.json

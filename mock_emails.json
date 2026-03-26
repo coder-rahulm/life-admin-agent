@@ -1,0 +1,37 @@
+[
+  {
+    "id": "mock_email_001",
+    "gmail_message_id": "mock_001",
+    "subject": "Your Netflix subscription renews in 2 days",
+    "sender": "billing@netflix.com",
+    "body_text": "Hi there,\n\nYour Netflix Standard with ads plan (Rs.649/month) will automatically renew on 2026-03-28. To ensure uninterrupted service, please make sure your payment method on file is up to date.\n\nIf you'd like to update your payment method or manage your subscription, please visit your account settings.\n\nThank you for being a Netflix member!\n\nThe Netflix Team"
+  },
+  {
+    "id": "mock_email_002",
+    "gmail_message_id": "mock_002",
+    "subject": "FINAL NOTICE: Electricity bill overdue",
+    "sender": "support@bescom.in",
+    "body_text": "URGENT NOTICE\n\nDear Customer,\n\nThis is a FINAL NOTICE regarding your overdue electricity bill.\n\nOutstanding Amount: Rs.3,200\nOriginal Due Date: 2026-03-21 (5 days ago)\nService Account: BESC-9872341\n\nYour electricity connection is at risk of disconnection. Please pay immediately to avoid service interruption.\n\nPayment options: Online banking, BBMP counters, or our app.\n\nBESCOM Customer Care"
+  },
+  {
+    "id": "mock_email_003",
+    "gmail_message_id": "mock_003",
+    "subject": "Spotify Premium – Receipt for Rs.119",
+    "sender": "no-reply@spotify.com",
+    "body_text": "Hi,\n\nThank you for your payment!\n\nReceipt Details:\nPlan: Spotify Premium Individual\nAmount Paid: Rs.119\nPayment Date: 2026-03-26\nNext Billing Date: 2026-04-26\nPayment Method: Visa ending in 4242\n\nYou can access your receipt and billing history in your account settings.\n\nEnjoy your music!\nSpotify"
+  },
+  {
+    "id": "mock_email_004",
+    "gmail_message_id": "mock_004",
+    "subject": "Reminder: Car insurance renewal next week",
+    "sender": "renewals@icicilombard.com",
+    "body_text": "Dear Customer,\n\nThis is a friendly reminder that your ICICI Lombard car insurance policy is due for renewal.\n\nPolicy Number: ICICI-POL-2024-98765\nVehicle: Your registered vehicle\nPolicy Expiry Date: 2026-04-02 (7 days from now)\nRenewal Premium: Rs.8,500\n\nDriving without valid insurance is illegal. Avoid a lapse in coverage by renewing now.\n\nClick here to renew: https://icicilombard.com/renew\n\nICICI Lombard Team"
+  },
+  {
+    "id": "mock_email_005",
+    "gmail_message_id": "mock_005",
+    "subject": "Your Notion subscription – invoice attached",
+    "sender": "billing@notion.so",
+    "body_text": "Hi,\n\nHere is your invoice for your Notion subscription.\n\nInvoice #INV-2026-1234\nPlan: Notion Plus (Annual)\nAmount: Rs.1,600\nBilling Period: 2026-03-26 to 2027-03-26\n\nAccount Activity Note: Our records show your last login was 62 days ago on 2026-01-24. We hope Notion is still serving you well!\n\nYou can download your invoice from your billing settings.\n\nThank you,\nThe Notion Team"
+  }
+]

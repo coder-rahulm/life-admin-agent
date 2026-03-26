@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-dark-900 text-white font-sans;
+    background: linear-gradient(135deg, #0a0f1e 0%, #0d1626 50%, #111827 100%);
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #111827;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-200 hover:bg-white/8 hover:border-white/20;
+  }
+
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-red-600/80 hover:bg-red-500 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2;
+  }
+
+  .btn-success {
+    @apply px-4 py-2 bg-emerald-600/80 hover:bg-emerald-500 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2;
+  }
+
+  .badge-p1 {
+    @apply px-2 py-0.5 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30;
+  }
+
+  .badge-p2 {
+    @apply px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+
+  .badge-p3 {
+    @apply px-2 py-0.5 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30;
+  }
+
+  .stat-card {
+    @apply glass-card p-5 flex flex-col gap-2;
+  }
+
+  .agent-thought {
+    @apply text-blue-300 text-sm leading-relaxed;
+  }
+
+  .agent-action {
+    @apply text-purple-300 text-sm font-mono;
+  }
+
+  .agent-observation {
+    @apply text-emerald-300 text-sm;
+  }
+
+  .agent-confidence {
+    @apply text-amber-300 text-sm font-medium;
+  }
+
+  .agent-final {
+    @apply text-white text-sm font-semibold;
+  }
+}
+
+/* Custom animations */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.05) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.glow-amber {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.neon-border {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2), inset 0 0 10px rgba(59, 130, 246, 0.05);
+}
