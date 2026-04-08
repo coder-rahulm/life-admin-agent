@@ -9,6 +9,15 @@ from groq import Groq
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
+if not GROQ_API_KEY:
+    import warnings
+    warnings.warn(
+        "⚠️  GROQ_API_KEY is not set in backend/.env — the chatbot will not work. "
+        "Get a free key at https://console.groq.com and add it to backend/.env",
+        RuntimeWarning,
+        stacklevel=1,
+    )
+
 SYSTEM_PROMPT = """You are **Life Admin Assistant** — a smart, friendly AI guide built into the Life Admin Agent app.
 
 You help users with:
@@ -51,11 +60,24 @@ Include this JSON block in your message so the app can process it.
 
 
 def get_groq_client() -> Groq:
+    if not GROQ_API_KEY:
+        raise ValueError(
+            "GROQ_API_KEY is missing. Add it to backend/.env — get a free key at https://console.groq.com"
+        )
     return Groq(api_key=GROQ_API_KEY)
 
 
 def chat_with_groq(messages: list, system: str = SYSTEM_PROMPT) -> str:
     """Send messages to Groq and get a response."""
+    if not GROQ_API_KEY:
+        return (
+            "⚠️ **Chatbot not configured** — the `GROQ_API_KEY` is missing from `backend/.env`.\n\n"
+            "To fix this:\n"
+            "1. Get a **free** API key at https://console.groq.com\n"
+            "2. Open `backend/.env` and add:\n"
+            "   `GROQ_API_KEY=gsk_your_key_here`\n"
+            "3. Restart the backend server."
+        )
     client = get_groq_client()
     full_messages = [{"role": "system", "content": system}] + messages
     response = client.chat.completions.create(

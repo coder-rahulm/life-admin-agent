@@ -406,6 +406,13 @@ class AddSubscriptionRequest(BaseModel):
     billing_cycle: str = "monthly"
 
 
+@app.get("/api/chat/status")
+async def chat_status():
+    """Returns whether the chatbot is ready (GROQ_API_KEY is set)."""
+    from chatbot import GROQ_API_KEY as _KEY
+    return {"ready": bool(_KEY), "model": "llama-3.3-70b-versatile"}
+
+
 @app.post("/api/chat")
 async def chat(req: ChatRequest, db: Session = Depends(get_db)):
     """Groq-powered chatbot endpoint. Handles guidance + subscription adds."""

@@ -79,6 +79,7 @@ function ChatBotInner() {
     const [input, setInput] = useState('')
     const [loading, setLoading] = useState(false)
     const [unread, setUnread] = useState(0)
+    const [chatReady, setChatReady] = useState(null) // null=unknown, true=ready, false=not configured
     const bottomRef = useRef(null)
     const inputRef = useRef(null)
 
@@ -86,6 +87,13 @@ function ChatBotInner() {
         if (open) {
             setUnread(0)
             setTimeout(() => inputRef.current?.focus(), 100)
+            // Check if GROQ_API_KEY is configured
+            if (chatReady === null) {
+                fetch(`${API}/api/chat/status`)
+                    .then(r => r.json())
+                    .then(d => setChatReady(d.ready))
+                    .catch(() => setChatReady(false))
+            }
         }
     }, [open])
 
@@ -184,6 +192,21 @@ function ChatBotInner() {
                             <ChevronDown size={16} />
                         </button>
                     </div>
+
+                    {/* GROQ key warning banner */}
+                    {chatReady === false && (
+                        <div className="mx-3 mt-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl shrink-0">
+                            <p className="text-xs text-amber-400 font-semibold mb-1">⚠️ Chatbot not configured</p>
+                            <p className="text-xs text-amber-300/80">
+                                Add your <code className="bg-white/10 px-1 rounded">GROQ_API_KEY</code> to{' '}
+                                <code className="bg-white/10 px-1 rounded">backend/.env</code>.{' '}
+                                Get a free key at{' '}
+                                <a href="https://console.groq.com" target="_blank" rel="noreferrer" className="underline">
+                                    console.groq.com
+                                </a>
+                            </p>
+                        </div>
+                    )}
 
                     {/* Messages */}
                     <div className="flex-1 overflow-y-auto p-4">
