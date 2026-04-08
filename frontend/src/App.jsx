@@ -1,20 +1,14 @@
-import React, { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom'
-import { LayoutDashboard, CreditCard, BarChart3, Play, Loader2, LogOut } from 'lucide-react'
+import React, { useState } from 'react'
+import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
+import { LayoutDashboard, CreditCard, BarChart3, Play, Loader2 } from 'lucide-react'
 import Dashboard from './pages/Dashboard'
 import Subscriptions from './pages/Subscriptions'
 import Insights from './pages/Insights'
-import Login from './pages/Login'
 import ChatBot from './components/ChatBot'
-import { auth, signOut } from './firebase'
-import { onAuthStateChanged } from 'firebase/auth'
 
 const API = 'http://localhost:8000'
 
 function Navbar({ onStartDemo, demoRunning }) {
-    const handleLogout = () => {
-        signOut(auth);
-    };
     return (
         <nav className="sticky top-0 z-50 border-b border-white/5 backdrop-blur bg-white/3">
             <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -58,14 +52,18 @@ function Navbar({ onStartDemo, demoRunning }) {
                     </NavLink>
                 </div>
 
-                {/* Logout Button */}
+                {/* Start Demo button — hidden for project review
                 <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-sm font-medium rounded-lg transition-all"
+                    onClick={onStartDemo}
+                    disabled={demoRunning}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium rounded-lg transition-all shadow-lg disabled:opacity-60"
                 >
-                    <LogOut size={14} />
-                    <span className="hidden md:inline">Sign Out</span>
+                    {demoRunning
+                        ? <Loader2 size={13} className="animate-spin" />
+                        : <Play size={13} fill="currentColor" />}
+                    {demoRunning ? 'Running...' : '▶️ Start Demo'}
                 </button>
+                */}
             </div>
         </nav>
     )
@@ -73,16 +71,6 @@ function Navbar({ onStartDemo, demoRunning }) {
 
 export default function App() {
     const [demoRunning, setDemoRunning] = useState(false)
-    const [user, setUser] = useState(null)
-    const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            setLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
 
     const handleStartDemo = async () => {
         if (demoRunning) return
@@ -97,27 +85,18 @@ export default function App() {
         }
     }
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-950">
-                <Loader2 className="animate-spin text-blue-500 w-8 h-8" />
-            </div>
-        );
-    }
-
     return (
         <BrowserRouter>
             <div className="min-h-screen">
-                {user && <Navbar onStartDemo={handleStartDemo} demoRunning={demoRunning} />}
-                <main className={user ? "max-w-6xl mx-auto px-4 py-6" : ""}>
+                <Navbar onStartDemo={handleStartDemo} demoRunning={demoRunning} />
+                <main className="max-w-6xl mx-auto px-4 py-6">
                     <Routes>
-                        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-                        <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" />} />
-                        <Route path="/subscriptions" element={user ? <Subscriptions /> : <Navigate to="/login" />} />
-                        <Route path="/insights" element={user ? <Insights /> : <Navigate to="/login" />} />
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/subscriptions" element={<Subscriptions />} />
+                        <Route path="/insights" element={<Insights />} />
                     </Routes>
                 </main>
-                {user && <ChatBot />}
+                <ChatBot />
             </div>
         </BrowserRouter>
     )

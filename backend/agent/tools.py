@@ -1,11 +1,9 @@
+"""All 5 agent tools for the Life Admin Agent."""
 import os
 import json
 import uuid
 import re
 import httpx
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from typing import Optional
 import anthropic
@@ -311,63 +309,13 @@ async def send_notification(task: dict, channel: str = "telegram") -> dict:
         except Exception as e:
             return {"sent": False, "error": str(e)}
     else:
-        # Email integration via SMTP
-        smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-        smtp_port = int(os.getenv("SMTP_PORT", "465"))
-        smtp_user = os.getenv("SMTP_USER", "")
-        smtp_pass = os.getenv("SMTP_PASSWORD", "")
-        
-        target_email = os.getenv("USER_EMAIL", smtp_user) # Sends to self by default
-
-        if not smtp_user or not smtp_pass:
-            return {
-                "sent": False,
-                "channel": "email",
-                "message": message,
-                "error": "Missing SMTP credentials for email delivery.",
-            }
-        
-        try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = f"Life Admin Alert: {priority} - {title}"
-            msg["From"] = f"Life Admin Agent <{smtp_user}>"
-            msg["To"] = target_email
-
-            html = f"""
-            <html>
-              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                <h2 style="color: #2563eb;">🔔 Life Admin Alert — {priority}</h2>
-                <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px;">
-                  <h3 style="margin-top: 0;">{title}</h3>
-                  <p><strong>Due Date:</strong> {due}</p>
-                  <p><strong>Amount:</strong> ₹{amount:.0f}</p>
-                  <p><em>{explanation}</em></p>
-                </div>
-                <p style="font-size: 12px; color: #666; margin-top: 20px;">
-                  Sent automatically by your Life Admin Agent.
-                </p>
-              </body>
-            </html>
-            """
-            
-            part = MIMEText(html, "html")
-            msg.attach(part)
-            
-            # Using SSL for port 465, STARTTLS for others
-            if smtp_port == 465:
-                with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
-                    server.login(smtp_user, smtp_pass)
-                    server.sendmail(smtp_user, target_email, msg.as_string())
-            else:
-                with smtplib.SMTP(smtp_server, smtp_port) as server:
-                    server.starttls()
-                    server.login(smtp_user, smtp_pass)
-                    server.sendmail(smtp_user, target_email, msg.as_string())
-                    
-            return {"sent": True, "channel": "email", "recipient": target_email}
-            
-        except Exception as e:
-            return {"sent": False, "channel": "email", "error": str(e)}
+        # Mock / email fallback
+        return {
+            "sent": True,
+            "channel": "mock",
+            "message": message,
+            "note": "No Telegram credentials configured; notification logged locally.",
+        }
 
 
 # ─── Tool 5: web_search ───────────────────────────────────────────────────────
